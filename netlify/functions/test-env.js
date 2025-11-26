@@ -1,38 +1,33 @@
+const nodemailer = require('nodemailer');
+
 exports.handler = async function(event, context) {
-  console.log('TEST Function called');
+  console.log('Testing SMTP connection...');
   
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS'
-  };
-
-  if (event.httpMethod === 'OPTIONS') {
-    return { statusCode: 200, headers, body: '' };
-  }
-
   try {
-    console.log('Event body:', event.body);
+    const transporter = nodemailer.createTransporter({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT),
+      secure: true,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    });
+
+    // Test connection
+    await transporter.verify();
+    console.log('SMTP connection SUCCESS');
     
     return {
       statusCode: 200,
-      headers,
-      body: JSON.stringify({ 
-        success: true, 
-        message: 'TEST: Function is working!',
-        data: JSON.parse(event.body)
-      })
+      body: JSON.stringify({ success: true, message: 'SMTP connection successful' })
     };
-
+    
   } catch (error) {
-    console.error('Error:', error);
+    console.error('SMTP connection FAILED:', error);
     return {
       statusCode: 500,
-      headers,
-      body: JSON.stringify({ 
-        success: false, 
-        error: error.message 
-      })
+      body: JSON.stringify({ success: false, error: error.message })
     };
   }
 };
