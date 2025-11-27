@@ -11,7 +11,7 @@ let codes = {};
 // SMTP konfiqurasiya
 const transporter = nodemailer.createTransport({
   host: "mail.verify-swift.com",  // Megahost SMTP host
-  port: 465,                      // SSL: 465, TLS: 587
+  port: 465,                       // SSL: 465, TLS: 587
   secure: true,
   auth: {
     user: "check@verify-swift.com",   // sizin mailbox
@@ -22,7 +22,7 @@ const transporter = nodemailer.createTransport({
 // Kod göndərmə endpoint
 app.post("/send-code", async (req, res) => {
   const { email } = req.body;
-  const code = Math.floor(100000 + Math.random()*900000).toString();
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
   codes[email] = code;
 
   try {
@@ -33,7 +33,7 @@ app.post("/send-code", async (req, res) => {
       text: `Sizin doğrulama kodunuz: ${code}`
     });
     res.send({ success: true, message: "Kod göndərildi" });
-  } catch(err) {
+  } catch (err) {
     console.error("Mail göndərmə xətası", err);
     res.status(500).send({ success: false, message: "Mail göndərilə bilmədi" });
   }
