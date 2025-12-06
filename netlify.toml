@@ -6,29 +6,6 @@
   directory = "./functions"
   node_bundler = "esbuild"
 
-# Environment variables (development için)
-[build.environment]
-  NODE_VERSION = "18"
-
-# Redirect rules
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
-
-# Headers for security
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Frame-Options = "DENY"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
-
-# CORS for functions
-[[headers]]
-  for = "/.netlify/functions/*"
-  [headers.values]
-    Access-Control-Allow-Origin = "*"
-    Access-Control-Allow-Headers = "Content-Type"
-    Access-Control-Allow-Methods = "POST, GET, OPTIONS"
+[dev]
+  framework = "#static"
+  targetPort = 8888
